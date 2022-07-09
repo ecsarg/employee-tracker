@@ -113,14 +113,31 @@ viewEmployees = () => {
                     LEFT JOIN departments ON roles.department_id = departments.id
                     LEFT JOIN employees manager ON employees.manager_id = manager.id`;
 
-    connnection.query(sql, (err, rows) => {
+    connection.query(sql, (err, rows) => {
         if (err) throw err;
         console.table(rows);
         askUser();
-    });
+    })
 };
 
 // Add a Department
+addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'addDepartment',
+            message: "Enter the name of the department you want to add.",
+        }
+    ])
+    .then(answer => {
+        const sql = `INSERT INTO departments (name) VALUES (?)`;
+        connection.query(sql, answer.addDepartment, (err, result) => {
+            if (err) throw err;
+            console.log('Added ' + answer.addDepartment + ' to departments.');
+            viewDepartments();
+        });
+    });
+};
 
 // Add a Role
 
