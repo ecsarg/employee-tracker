@@ -140,9 +140,54 @@ addDepartment = () => {
 };
 
 // Add a Role
+addRole = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'role',
+            message: 'Enter the name of the role you want to add.'
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'Enter the salary for the role you are adding.'
+        }
+    ])
+    .then(answer => {
+        const params = [answer.role, answer.salary];
 
+        const sql = `SELECT name, id FROM departments`;
+
+        connection.query(sql, (err, data) => {
+            if (err) throw err;
+
+            const department = data.map(({ name, id }) => ({ name: name, value: id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Select which department this role is in.'
+                }
+            ])
+            .then (departmentPick => {
+                const department = departmentPick.department;
+                params.push(department);
+
+                const sql = `INSERT INTO roles (title, salary, department_id)
+                    VALUES (?, ?, ?)`;
+        
+                connection.query(sql, params, (err, results) => {
+                if (err) throw err; 
+                console.log('Added ' + answer.role + ' to roles.');
+
+                viewRoles();
+            });
+        });
+    });
+});
+};
+        
 // Add an Employee
 
 // Update an Employee Role
-
-
