@@ -167,7 +167,8 @@ addRole = () => {
                 {
                     type: 'list',
                     name: 'department',
-                    message: 'Select which department this role is in.'
+                    message: 'Select which department this role is in.',
+                    choices: department
                 }
             ])
             .then (departmentPick => {
@@ -189,5 +190,74 @@ addRole = () => {
 };
         
 // Add an Employee
+addEmployee = () => {
+    inquirer.prompt ([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: "Enter employee's first name"
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "Enter employee's last name."
+        }
+    ])
+    .then(answer => {
+        const params = [answer.firstName, answer.lastName]
+
+        const rolesSql = `SELECT roles.id, roles.title FROM roles`;
+
+        connection.query(rolesSql, (err, data) => {
+            if (err) throw err;
+
+            const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'Select which role the employee has.',
+                    choices: roles
+                }
+            ])
+            .then(rolesChoice => {
+                const roles = rolesChoice.roles;
+                params.push(roles);
+
+                const managerSql = `SELECT * FROM employees`;
+
+                connection.query(managerSql, (err, data) => {
+                    if (err) throw err;
+
+                    const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'manager',
+                            message: "Select the employee's manager.",
+                            choices: managers
+                        }
+                    ])
+                    .then(managersChoice => {
+                        const manager = managersChoice.manager;
+                        params.push(manager);
+
+                        const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+                                    VALUES (?, ?, ?, ?)`;
+
+                        connection.query(sql, params, (err, results) => {
+                            if (err) throw err;
+                            console.log('Employee has been added.');
+
+                            viewEmployees();
+                        });
+                    });
+                });
+            });
+        });
+    });
+};
 
 // Update an Employee Role
