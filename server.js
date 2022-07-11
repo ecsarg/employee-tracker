@@ -261,3 +261,60 @@ addEmployee = () => {
 };
 
 // Update an Employee Role
+updateEmployeeRole = () => {
+    const employeesSql = `SELECT * FROM employees`;
+
+    connection.query(employeesSql, (err, data) => {
+        if (err) throw err;
+
+        const employees = data.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: 'Select which employee you would like to update.',
+                choices: employees
+            }
+        ])
+        .then(employeeChoice => {
+            const employees = employeeChoice.name;
+            const params = [];
+            params.push(employees);
+
+            const rolesSql = `SELECT * FROM roles`;
+
+            connection.query(rolesSql, (err, data) => {
+                if (err) throw err;
+
+                const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'roles',
+                        message: "Enter employee's new role.",
+                        choices: roles
+                    }
+                ])
+                .then(rolesChoice => {
+                    const roles = rolesChoice.roles;
+                    params.push(roles);
+
+                    let employee = params[0]
+                    params[0] = roles
+                    params[1] = employee
+
+                    const sql = `UPDATE employees SET role_id =? WHERE id = ?`;
+
+                    connection.query(sql, params, (err, result) => {
+                        if (err) throw err;
+                        console.log("Employee's role has been updated.");
+
+                        viewEmployees();
+                    });
+                });
+            });
+        });
+    });
+};
