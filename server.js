@@ -106,7 +106,7 @@ viewRoles = () => {
 // View All Employees
 viewEmployees = () => {
     console.log("Showing all employees:");
-    const sql = `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS  department, roles.salary,
+    const sql = `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS departments, roles.salary,
                     CONCAT (manager.first_name, " ", manager.last_name) AS manager
                 FROM employees
                     LEFT JOIN roles ON employees.role_id = roles.id
